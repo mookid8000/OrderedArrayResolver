@@ -3,7 +3,7 @@ What?
 
 This a simple `ISubDependencyResolver` implementation for Castle Windsor that allows injected arrays to be ordered by specifying one or more components' relation to other components.
 
-Example!
+What's the problem?
 ====
 
 Imagine we have some kind of task interface - e.g. `public interface ITask {}` - which should be executed by some service that gets task implementations injected:
@@ -20,6 +20,9 @@ Usually, Windsor would happily inject these by using an `ISubDependencyResolver`
 One solution, which is as pragmatic as it is clunky, is to add an `int Order { get; }` signature to the `ITask` interface, thus allowing each implementation to return an `int` that would specify their absolute position. 
 
 And then, if the `TaskExecutor` would remember to `.OrderBy(t => t.Order)`, tasks could be executed in order.
+
+The solution?
+====
 
 As an experiment, I wanted to see if it would be a cooler to solution to provide only the necessary little ordering hints, where each component could specify its relation to another component.
 
