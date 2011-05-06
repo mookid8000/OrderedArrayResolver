@@ -6,12 +6,8 @@ This a simple `ISubDependencyResolver` implementation for Castle Windsor that al
 Example!
 ====
 
-Imagine we have some kind of task interface:
-````
-public interface ITask {}
-````
+Imagine we have some kind of task interface - e.g. `public interface ITask {}` - which should be executed by some service that gets task implementations injected:
 
-which should be executed by some service that gets the tasks injected:
 ````
 public class TaskExecutor
 {
@@ -19,7 +15,17 @@ public class TaskExecutor
 }
 ````
 
-Now, in order to affect the order of the tasks, with `OrderedArrayResolver` we can do this:
+Usually, Windsor would happily inject these by using an `ISubDependencyResolver`, either `ArrayResolver`, `ListResolver`, or `CollectionResolver`. Only problem is that the order would be determined by the order in which components were registered.
+
+One solution, which is as pragmatic as it is clunky, is to add an `int Order { get; }` signature to the `ITask` interface, thus allowing each implementation to return an `int` that would specify their absolute position. 
+
+And then, if the `TaskExecutor` would remember to `.OrderBy(t => t.Order)`, tasks could be executed in order.
+
+As an experiment, I wanted to see if it would be a cooler to solution to provide only the necessary little ordering hints, where each component could specify its relation to another component.
+
+Most important thing is that this is not necessary - only components with an opinion would need to position itself in relation to another component.
+
+So, in order to affect the order of the tasks, with the `OrderedArrayResolver` we can do this:
 
 ````
 [ExecutesAfter(typeof(PrepareSomeStuff))]
@@ -28,6 +34,7 @@ public class DoStuff : ITask {}
 
 [ExecutesAfter(typeof(PrepareSomeStuff))]
 [ExecutesBefore(typeof(FinishOffSomeStuff))]
+[ExecutesAfter(typeof(DoStuff))]
 public class DoMoreStuff : ITask {}
 
 public class PrepareSomeStuff : ITask {}
@@ -36,3 +43,10 @@ public class PrepareSomeStuff : ITask {}
 public class FinishOffSomeStuff : ITask {}
 ````
 
+And at this point, I realize that this example probably calls for two new attributes: `ExecutesBeforeAllAttribute` and `ExecutesAfterAllAttribute`.
+
+Please note
+====
+that this functionality does not work when you call `ResolveAll` - it only works on injected arrays.
+
+As of Windsor 3.0, this will change, because Windsor 3.0 will have an `IHandlerFilter` hook in `ResolveAll`, similar to the existing `IHandlerSelector` which works for `Resolve`.
