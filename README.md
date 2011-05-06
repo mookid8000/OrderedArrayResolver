@@ -24,7 +24,7 @@ And then, if the `TaskExecutor` would remember to `.OrderBy(t => t.Order)`, task
 The solution?
 ====
 
-As an experiment, I wanted to see if it would be a cooler to solution to provide only the necessary little ordering hints, where each component could specify its relation to another component.
+As an experiment, I wanted to see if it would be a cooler solution to provide only the necessary little ordering hints, where each component could specify its relation to another component.
 
 Most important thing is that this is not necessary - only components with an opinion would need to position itself in relation to another component.
 
@@ -46,7 +46,13 @@ public class PrepareSomeStuff : ITask {}
 public class FinishOffSomeStuff : ITask {}
 ````
 
-And at this point, I realize that this example probably calls for two new attributes: `ExecutesBeforeAllAttribute` and `ExecutesAfterAllAttribute`.
+And at this point, I realize that this example probably calls for two new attributes: `ExecutesBeforeAllAttribute` and `ExecutesAfterAllAttribute` :)
+
+How does it work?
+====
+`OrderedArrayResolver` creates a directed graph of components, where incoming edges link to components that must be put before this component. 
+
+The algorithm is probably pretty naive in its implementation, but it works. And it has cycle detection, and the ordering result is cached so that the execution speed is unimportant.
 
 Please note
 ====
